@@ -12,7 +12,7 @@ import (
 )
 
 type RepositoryOption struct {
-	DB *sqlx.DB
+	pkg.OptionsApplication
 }
 
 type Repository struct {
