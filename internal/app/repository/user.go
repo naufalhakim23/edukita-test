@@ -16,11 +16,19 @@ import (
 
 type (
 	IUserRepository interface {
+		// Create User General
 		CreateUser(ctx context.Context, user model.User, tx *sqlx.Tx) (docs model.User, err error)
 		GetUserByEmail(ctx context.Context, email string, tx *sqlx.Tx) (docs model.User, err error)
 		GetUserByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.User, err error)
 		UpdateUserByID(ctx context.Context, user model.User, tx *sqlx.Tx) (docs model.User, err error)
 		DeleteUserByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.User, err error)
+
+		// Create User Teacher
+		CreateTeacher(ctx context.Context, teacher model.Teacher, tx *sqlx.Tx) (docs model.Teacher, err error)
+		// GetTeacherByEmail(ctx context.Context, email string, tx *sqlx.Tx) (docs model.Teacher, err error)
+		// GetTeacherByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Teacher, err error)
+		// UpdateTeacherByID(ctx context.Context, teacher model.Teacher, tx *sqlx.Tx) (docs model.Teacher, err error)
+		// DeleteTeacherByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Teacher, err error)
 	}
 	UserRepository struct {
 		RepositoryOption
@@ -148,5 +156,9 @@ func (r *UserRepository) DeleteUserByID(ctx context.Context, id string, tx *sqlx
 		return
 	}
 
+	return
+}
+
+func (r *UserRepository) CreateTeacher(ctx context.Context, teacher model.Teacher, tx *sqlx.Tx) (docs model.Teacher, err error) {
 	return
 }
