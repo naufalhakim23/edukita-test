@@ -11,5 +11,6 @@ type ServiceOption struct {
 }
 
 type Service struct {
-	// User IUserService
+	User               IUserService
+	LearningManagement ILearningManagementService
 }
