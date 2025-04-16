@@ -1,5 +1,7 @@
 package main
 
-func main() {
+import "edukita-teaching-grading/cmd"
 
+func main() {
+	cmd.Run()
 }
