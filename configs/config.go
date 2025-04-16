@@ -6,6 +6,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type (
@@ -19,6 +20,7 @@ type (
 		Port        int
 		Secret      string
 		StaticToken string
+		CostBcrypt  int
 		SwaggerPath string
 	}
 	Postgresql struct {
@@ -38,6 +40,7 @@ func LoadConfigurations(fileName string) (*Config, error) {
 		Port:        getEnvAsInt("APP_PORT", 8080),
 		Secret:      GetEnv("APP_SECRET", "supersecretsecret"),
 		StaticToken: GetEnv("APP_STATIC_TOKEN", "supersecretsecret"),
+		CostBcrypt:  getEnvAsInt("APP_COST_BCRYPT", bcrypt.DefaultCost),
 		SwaggerPath: GetEnv("APP_SWAGGER_PATH", ""),
 	}
 	psql := Postgresql{
