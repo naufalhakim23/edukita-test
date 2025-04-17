@@ -51,7 +51,7 @@ func LoadConfigurations(fileName string) (*Config, error) {
 	}
 	cookies := Cookies{
 		AccessToken: GetEnv("COOKIES_ACCESS_TOKEN", "edukita_lms"),
-		SSOExpired:  time.Hour * 24 * 7,
+		SSOExpired:  time.Hour * 24 * time.Duration(getEnvAsInt("COOKIES_SSO_EXPIRED", 7)),
 	}
 	psql := Postgresql{
 		Name: GetEnv("POSTGRES_NAME", "edukita-teaching-grading"),
