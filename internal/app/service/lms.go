@@ -16,13 +16,15 @@ import (
 
 type (
 	ILearningManagementService interface {
-		CreateAssignment(ctx context.Context, requestBody payload.CreateAssignmentRequest) (response *payload.CreateAssignmentResponse, err error)
+		CreateAssignment(ctx context.Context, requestBody *payload.CreateAssignmentRequest) (response *payload.CreateAssignmentResponse, err error)
 		GetAssignmentByID(ctx context.Context, id string) (response *payload.GetAssignmentResponse, err error)
-		UpdateAssignmentByID(ctx context.Context, id string, requestBody payload.UpdateAssignmentRequest) (response *payload.UpdateAssignmentResponse, err error)
+		UpdateAssignmentByID(ctx context.Context, id string, requestBody *payload.UpdateAssignmentRequest) (response *payload.UpdateAssignmentResponse, err error)
 
-		// CreateSubmission(ctx context.Context, id string, requestBody payload.CreateSubmissionRequest) (response *payload.CreateSubmissionResponse, err error)
-		// GetSubmissionByID(ctx context.Context, id string) (response *payload.GetSubmissionResponse, err error)
-		// UpdateSubmissionByID(ctx context.Context, id string, requestBody payload.UpdateSubmissionRequest) (response *payload.UpdateSubmissionResponse, err error)
+		CreateSubmission(ctx context.Context, id string, requestBody *payload.CreateSubmissionRequest) (response *payload.CreateSubmissionResponse, err error)
+		GetSubmissionByID(ctx context.Context, id string) (response *payload.GetSubmissionResponse, err error)
+		UpdateSubmissionByID(ctx context.Context, id string, requestBody *payload.UpdateSubmissionRequest) (response *payload.UpdateSubmissionResponse, err error)
+		GetAllSubmissionsByAssignmentID(ctx context.Context, assignmentID string, userID string) (response *payload.GetAllSubmissionsResponse, err error)
+		GetAllSubmissionsByUserID(ctx context.Context, id string) (response *payload.GetAllSubmissionsResponse, err error)
 	}
 	LearningManagementService struct {
 		ServiceOption
@@ -35,7 +37,7 @@ func InitiateLearningManagementService(opt ServiceOption) ILearningManagementSer
 	}
 }
 
-func (s *LearningManagementService) CreateAssignment(ctx context.Context, requestBody payload.CreateAssignmentRequest) (response *payload.CreateAssignmentResponse, err error) {
+func (s *LearningManagementService) CreateAssignment(ctx context.Context, requestBody *payload.CreateAssignmentRequest) (response *payload.CreateAssignmentResponse, err error) {
 	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
 		user, err := s.Repository.User.GetUserByID(ctx, requestBody.CreatedBy, tx)
 		if err != nil {
@@ -100,7 +102,7 @@ func (s *LearningManagementService) GetAssignmentByID(ctx context.Context, id st
 	})
 }
 
-func (s *LearningManagementService) UpdateAssignmentByID(ctx context.Context, id string, requestBody payload.UpdateAssignmentRequest) (response *payload.UpdateAssignmentResponse, err error) {
+func (s *LearningManagementService) UpdateAssignmentByID(ctx context.Context, id string, requestBody *payload.UpdateAssignmentRequest) (response *payload.UpdateAssignmentResponse, err error) {
 	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
 		user, err := s.Repository.User.GetUserByID(ctx, requestBody.UserID, tx)
 		if err != nil {
@@ -144,7 +146,7 @@ func (s *LearningManagementService) UpdateAssignmentByID(ctx context.Context, id
 	})
 }
 
-func (s *LearningManagementService) CreateSubmission(ctx context.Context, id string, requestBody payload.CreateSubmissionRequest) (response *payload.CreateSubmissionResponse, err error) {
+func (s *LearningManagementService) CreateSubmission(ctx context.Context, id string, requestBody *payload.CreateSubmissionRequest) (response *payload.CreateSubmissionResponse, err error) {
 	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
 		user, err := s.Repository.User.GetUserByID(ctx, requestBody.CreatedBy, tx)
 		if err != nil {
@@ -231,7 +233,7 @@ func (s *LearningManagementService) GetSubmissionByID(ctx context.Context, id st
 	})
 }
 
-func (s *LearningManagementService) UpdateSubmissionByID(ctx context.Context, id string, requestBody payload.UpdateSubmissionRequest) (response *payload.UpdateSubmissionResponse, err error) {
+func (s *LearningManagementService) UpdateSubmissionByID(ctx context.Context, id string, requestBody *payload.UpdateSubmissionRequest) (response *payload.UpdateSubmissionResponse, err error) {
 	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
 		user, err := s.Repository.User.GetUserByID(ctx, requestBody.UserID, tx)
 		if err != nil {
