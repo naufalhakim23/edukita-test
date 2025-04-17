@@ -17,6 +17,7 @@ func Router(option handler.HandlerOptions, f *fiber.App) {
 	userGroup := v1.Group("/user")
 	userGroup.Post("/register", user.RegisterUser)
 	userGroup.Post("/login", user.LoginUser)
+	userGroup.Post("/logout", authMiddleware.AuthenticateJWT(), user.LogoutUser)
 	userGroup.Get("/me", authMiddleware.AuthenticateJWT(), user.GetUserByID)
 	userGroup.Get("/:id", authMiddleware.AuthenticateJWT(), user.GetUserByID)
 
