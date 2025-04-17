@@ -17,9 +17,7 @@ type UserHandler struct {
 }
 
 func (h *UserHandler) RegisterUser(c *fiber.Ctx) (err error) {
-	var (
-		e *pkg.AppError
-	)
+	var e *pkg.AppError
 	req := new(payload.RegisterUserRequest)
 	if err = c.BodyParser(req); err != nil {
 		return
@@ -59,9 +57,7 @@ func (h *UserHandler) RegisterUser(c *fiber.Ctx) (err error) {
 }
 
 func (h *UserHandler) LoginUser(c *fiber.Ctx) (err error) {
-	var (
-		e *pkg.AppError
-	)
+	var e *pkg.AppError
 	req := new(payload.LoginUserRequest)
 	if err = c.BodyParser(req); err != nil {
 		return
@@ -103,8 +99,10 @@ func (h *UserHandler) LoginUser(c *fiber.Ctx) (err error) {
 	setCookie := fiber.Cookie{
 		Name:     h.Config.Cookies.AccessToken,
 		Value:    res.Token,
+		Path:     "/",
+		Domain:   h.Config.Cookies.Domain,
 		Expires:  time.Now().Add(h.Config.Cookies.SSOExpired),
-		HTTPOnly: true,
+		HTTPOnly: false,
 		SameSite: fiber.CookieSameSiteLaxMode,
 	}
 

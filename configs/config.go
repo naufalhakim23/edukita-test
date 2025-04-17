@@ -27,6 +27,7 @@ type (
 	}
 	Cookies struct {
 		AccessToken string
+		Domain      string
 		SSOExpired  time.Duration
 	}
 	Postgresql struct {
@@ -51,6 +52,7 @@ func LoadConfigurations(fileName string) (*Config, error) {
 	}
 	cookies := Cookies{
 		AccessToken: GetEnv("COOKIES_ACCESS_TOKEN", "edukita_lms"),
+		Domain:      GetEnv("COOKIES_DOMAIN", "localhost"),
 		SSOExpired:  time.Hour * 24 * time.Duration(getEnvAsInt("COOKIES_SSO_EXPIRED", 7)),
 	}
 	psql := Postgresql{

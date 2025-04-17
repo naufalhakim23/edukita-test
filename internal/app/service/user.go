@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"edukita-teaching-grading/internal/app/model"
@@ -38,8 +39,10 @@ func (s *UserService) RegisterUser(ctx context.Context, requestBody payload.Regi
 		now := time.Now()
 		user, err := s.Repository.User.GetUserByEmail(ctx, requestBody.Email, tx)
 		if err != nil {
-			s.Logger.Warnf(fmt.Sprintf("failed to get user by email: %s", err.Error()), zap.Error(err))
-			return
+			if err.(*pkg.AppError).StatusCode != http.StatusNotFound {
+				s.Logger.Warnf(fmt.Sprintf("failed to get user by email: %s", err.Error()), zap.Error(err))
+				return
+			}
 		}
 		if user.ID != uuid.Nil {
 			err = pkg.NewBadRequestError("email already exists", nil)
