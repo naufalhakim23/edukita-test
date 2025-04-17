@@ -37,5 +37,5 @@ func NewNotFoundError(msg string, err error) *AppError {
 }
 
 func NewDatabaseError(err error) *AppError {
-	return NewError(http.StatusText(http.StatusInternalServerError), "database error", http.StatusInternalServerError, err)
+	return NewError(http.StatusText(http.StatusInternalServerError), err.Error(), http.StatusInternalServerError, err)
 }

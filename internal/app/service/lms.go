@@ -63,7 +63,7 @@ func (s *LearningManagementService) CreateAssignment(ctx context.Context, reques
 		assignment := model.Assignment{
 			BaseModel: model.BaseModel{
 				ID:        uuid.New(),
-				CreatedBy: requestBody.CreatedBy,
+				CreatedBy: user.ID,
 				CreatedAt: now,
 			},
 			Title:       requestBody.Title,
@@ -128,7 +128,7 @@ func (s *LearningManagementService) UpdateAssignmentByID(ctx context.Context, id
 		assignment.DueDate = now
 		assignment.TotalPoints = requestBody.TotalPoints
 		assignment.IsPublished = requestBody.IsPublished
-		assignment.UpdatedBy = &user.Email
+		assignment.UpdatedBy = &user.ID
 		assignment.UpdatedAt = &now
 		assignment, err = s.Repository.LearningManagement.UpdateAssignmentByID(ctx, assignment, tx)
 		if err != nil {
@@ -171,7 +171,7 @@ func (s *LearningManagementService) CreateSubmission(ctx context.Context, id str
 			submission := model.Submission{
 				BaseModel: model.BaseModel{
 					ID:        uuid.New(),
-					CreatedBy: requestBody.CreatedBy,
+					CreatedBy: user.ID,
 					CreatedAt: time.Now(),
 				},
 				AssignmentID: assignment.ID,
@@ -256,8 +256,8 @@ func (s *LearningManagementService) UpdateSubmissionByID(ctx context.Context, id
 				return err
 			}
 			submission.Grade = requestBody.Grade
-			submission.Feedback = &requestBody.Feedback
-			submission.UpdatedBy = &user.Email
+			submission.Feedback = requestBody.Feedback
+			submission.UpdatedBy = &user.ID
 			submission.UpdatedAt = &now
 		case pkg.ROLE_STUDENT:
 			student, err := s.Repository.User.GetStudentByID(ctx, user.ID.String(), tx)
@@ -267,7 +267,7 @@ func (s *LearningManagementService) UpdateSubmissionByID(ctx context.Context, id
 			}
 			submission.StudentID = student.UserID
 			submission.Content = requestBody.Content
-			submission.UpdatedBy = &user.Email
+			submission.UpdatedBy = &user.ID
 			submission.UpdatedAt = &now
 			if requestBody.FileURL != "" {
 				submission.FileURL = requestBody.FileURL

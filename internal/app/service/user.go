@@ -18,9 +18,9 @@ import (
 type (
 	IUserService interface {
 		RegisterUser(ctx context.Context, requestBody payload.RegisterUserRequest) (response *payload.RegisterUserResponse, err error)
-		LoginUser(ctx context.Context, requestBody *payload.LoginUserRequest) (response *payload.LoginUserResponse, err error)
-		GetUserByEmail(ctx context.Context, email string) (response *payload.GetUserResponse, err error)
-		GetUserByID(ctx context.Context, id string) (response *payload.GetUserResponse, err error)
+		LoginUser(ctx context.Context, requestBody *payload.LoginUserRequest) (response payload.LoginUserResponse, err error)
+		GetUserByID(ctx context.Context, id string) (response payload.GetUserResponse, err error)
+		LogoutUser(ctx context.Context, id string) (response payload.LogoutUserResponse, err error)
 	}
 	UserService struct {
 		ServiceOption
@@ -36,10 +36,22 @@ func InitiateUserService(opt ServiceOption) IUserService {
 func (s *UserService) RegisterUser(ctx context.Context, requestBody payload.RegisterUserRequest) (response *payload.RegisterUserResponse, err error) {
 	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
 		now := time.Now()
-		user := model.User{
+		user, err := s.Repository.User.GetUserByEmail(ctx, requestBody.Email, tx)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to get user by email: %s", err.Error()), zap.Error(err))
+			return
+		}
+		if user.ID != uuid.Nil {
+			err = pkg.NewBadRequestError("email already exists", nil)
+			s.Logger.Warnf("email already exists: %s", user.Role, zap.Error(err))
+			return
+		}
+
+		userID := uuid.New()
+		user = model.User{
 			BaseModel: model.BaseModel{
-				ID:        uuid.New(),
-				CreatedBy: requestBody.Email,
+				ID:        userID,
+				CreatedBy: userID,
 				CreatedAt: now,
 			},
 			Email:     requestBody.Email,
@@ -86,26 +98,19 @@ func (s *UserService) RegisterUser(ctx context.Context, requestBody payload.Regi
 			return
 		}
 
-		token, err := GenerateJWTToken(user, s.Config.Application.Secret, s.Config.Cookies.SSOExpired)
-		if err != nil {
-			s.Logger.Warnf(fmt.Sprintf("failed to generate token: %s", err.Error()), zap.Error(err))
-			return err
-		}
-
 		response = &payload.RegisterUserResponse{
 			ID:        user.ID.String(),
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
 			Email:     user.Email,
 			Role:      user.Role,
-			Token:     token,
 		}
 
 		return
 	})
 }
 
-func (s *UserService) LoginUser(ctx context.Context, requestBody *payload.LoginUserRequest) (response *payload.LoginUserResponse, err error) {
+func (s *UserService) LoginUser(ctx context.Context, requestBody *payload.LoginUserRequest) (response payload.LoginUserResponse, err error) {
 	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
 		user, err := s.Repository.User.GetUserByEmail(ctx, requestBody.Email, tx)
 		if err != nil {
@@ -125,58 +130,22 @@ func (s *UserService) LoginUser(ctx context.Context, requestBody *payload.LoginU
 			return err
 		}
 
+		now := time.Now()
+		user.LastLogin = &now
+		user.UpdatedBy = &user.ID
+		user, err = s.Repository.User.UpdateUserByID(ctx, user, tx)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to update user: %s", err.Error()), zap.Error(err))
+			return
+		}
+
 		response.Token = token
 
 		return
 	})
 }
 
-func (s *UserService) GetUserByEmail(ctx context.Context, email string) (response *payload.GetUserResponse, err error) {
-	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
-		user, err := s.Repository.User.GetUserByEmail(ctx, email, tx)
-		if err != nil {
-			s.Logger.Warnf(fmt.Sprintf("failed to get user by email: %s", err.Error()), zap.Error(err))
-			return
-		}
-
-		switch user.Role {
-		case pkg.ROLE_ADMIN:
-		case pkg.ROLE_TEACHER:
-			teacher, err := s.Repository.User.GetTeacherByID(ctx, user.ID.String(), tx)
-			if err != nil {
-				s.Logger.Warnf(fmt.Sprintf("failed to get teacher by id: %s", err.Error()), zap.Error(err))
-				return err
-			}
-			response.Role.Department = teacher.Department
-			response.Role.Title = teacher.Title
-		case pkg.ROLE_STUDENT:
-			student, err := s.Repository.User.GetStudentByID(ctx, user.ID.String(), tx)
-			if err != nil {
-				s.Logger.Warnf(fmt.Sprintf("failed to get student by id: %s", err.Error()), zap.Error(err))
-				return err
-			}
-			response.Role.StudentID = student.StudentID
-			response.Role.EnrollmentYear = student.EnrollmentYear
-			response.Role.Program = student.Program
-		default:
-			err = pkg.NewBadRequestError("invalid role", nil)
-			s.Logger.Warnf("invalid role: %s", user.Role, zap.Error(err))
-			return
-		}
-
-		response.ID = user.ID.String()
-		response.FirstName = user.FirstName
-		response.LastName = user.LastName
-		response.Email = user.Email
-		response.IsActive = user.IsActive
-		response.LastLogin = user.LastLogin.Format(time.RFC3339)
-		response.CreatedAt = user.CreatedAt.Format(time.RFC3339)
-		response.UpdatedAt = user.UpdatedAt.Format(time.RFC3339)
-		return
-	})
-}
-
-func (s *UserService) GetUserByID(ctx context.Context, id string) (response *payload.GetUserResponse, err error) {
+func (s *UserService) GetUserByID(ctx context.Context, id string) (response payload.GetUserResponse, err error) {
 	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
 		user, err := s.Repository.User.GetUserByID(ctx, id, tx)
 		if err != nil {
@@ -220,6 +189,28 @@ func (s *UserService) GetUserByID(ctx context.Context, id string) (response *pay
 			response.UpdatedAt = user.UpdatedAt.Format(time.RFC3339)
 		}
 
+		return
+	})
+}
+
+func (s *UserService) LogoutUser(ctx context.Context, id string) (response payload.LogoutUserResponse, err error) {
+	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
+		user, err := s.Repository.User.GetUserByID(ctx, id, tx)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to get user by id: %s", err.Error()), zap.Error(err))
+			return
+		}
+
+		now := time.Now()
+		user.LastLogin = &now
+		user.UpdatedBy = &user.ID
+		user, err = s.Repository.User.UpdateUserByID(ctx, user, tx)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to update user: %s", err.Error()), zap.Error(err))
+			return
+		}
+
+		response.ID = user.ID.String()
 		return
 	})
 }

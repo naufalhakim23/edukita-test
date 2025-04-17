@@ -11,7 +11,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/sirupsen/logrus"
 	"go.uber.org/zap"
 )
 
@@ -57,13 +56,13 @@ func (s *server) ServerRun() {
 
 	// Start the server
 	if err := f.Listen(address); err != nil {
-		logrus.Fatalf("failed to listen: %v", err)
+		s.Option.Logger.Fatalf("failed to listen: %v", err)
 	}
 
 	// Gracefully shut down the server when the application is shutting down
 	if err := f.Shutdown(); err != nil {
-		logrus.Errorf("Failed to shut down server gracefully: %v", err)
+		s.Option.Logger.Errorf("Failed to shut down server gracefully: %v", err)
 	} else {
-		logrus.Info("Server shut down gracefully")
+		s.Option.Logger.Info("Server shut down gracefully")
 	}
 }
