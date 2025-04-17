@@ -1,4 +1,10 @@
-type User = {
+export interface IResponse<T = unknown> {
+  data: T;
+  message: string;
+  status: number;
+}
+
+export type User = {
   id: string
   first_name: string
   last_name: string
@@ -10,16 +16,17 @@ type User = {
   updated_at: string
 }
 
-type RegisterUserRequest = {
+export type RegisterUserRequest = {
   name: string
   email: string
   password: string
+  confirm_password: string
   first_name: string
   last_name: string
   role: string
 }
 
-type RegisterUserResponse = {
+export type RegisterUserResponse = {
   id: string
   first_name: string
   last_name: string
@@ -27,12 +34,12 @@ type RegisterUserResponse = {
   role: string
 }
 
-type UserLoginRequest = {
+export type UserLoginRequest = {
   email: string
   password: string
 }
 
-type UserLoginResponse = {
+export type UserLoginResponse = {
   user: User
   token: string
 }

@@ -2,7 +2,7 @@ import { json } from '@tanstack/react-start'
 import { createAPIFileRoute } from '@tanstack/react-start/api'
 import { LMS_BACKEND_URL } from '@/utils/env'
 
-export const APIRoute = createAPIFileRoute('/api/users/$id')({
+export const APIRoute = createAPIFileRoute('/user/$id')({
   GET: async ({ request, params }) => {
     console.info(`Fetching users by id=${params.id}... @`, request.url)
     try {
