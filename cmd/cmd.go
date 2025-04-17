@@ -7,6 +7,7 @@ import (
 	"edukita-teaching-grading/internal/app/service"
 	"edukita-teaching-grading/internal/pkg"
 	"edukita-teaching-grading/pkg/driver"
+	"edukita-teaching-grading/pkg/logger"
 
 	"github.com/sirupsen/logrus"
 	"go.uber.org/zap"
@@ -19,7 +20,13 @@ func Run() {
 		return
 	}
 
-	logger := zap.Must(zap.NewProduction()).Sugar()
+	appName := config.Application.Name
+	if config.Application.Env != "production" {
+		appName = appName + "-" + config.Application.Env
+	}
+
+	// initialize logger
+	logger := logger.NewLogger(appName)
 	defer logger.Sync()
 
 	psql, err := driver.NewDatabaseDriver(driver.PostgreSQLOption{
@@ -27,10 +34,10 @@ func Run() {
 		URL:          config.Postgresql.URL,
 	})
 	if err != nil {
-		logrus.Fatalf("failed to connect to database: %v", err)
+		logger.Fatalf("failed to connect to database: %v", err.Error(), zap.Error(err))
 		return
 	} else {
-		logrus.Infof("connected to database: %s", config.Postgresql.Name)
+		logger.Infof("connected to database: %s", config.Postgresql.Name)
 	}
 
 	options := pkg.OptionsApplication{
