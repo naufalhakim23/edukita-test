@@ -1,8 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authAPI, User } from '@/lib/api';
-import { useToast } from '@/components/ui/use-toast';
-
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
@@ -25,7 +23,6 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { toast } = useToast();
 
   const loadUser = async () => {
     const storedUser = localStorage.getItem('user');
@@ -59,18 +56,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('user', JSON.stringify(user));
       
       setUser(user);
-      toast({
-        title: 'Login Successful',
-        description: `Welcome back, ${user.name}!`,
-        variant: 'default',
-      });
     } catch (error) {
       console.error('Login error:', error);
-      toast({
-        title: 'Login Failed',
-        description: 'Invalid email or password.',
-        variant: 'destructive',
-      });
       throw error;
     }
   };
@@ -84,18 +71,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('user', JSON.stringify(user));
       
       setUser(user);
-      toast({
-        title: 'Registration Successful',
-        description: `Welcome, ${user.name}!`,
-        variant: 'default',
-      });
     } catch (error) {
       console.error('Registration error:', error);
-      toast({
-        title: 'Registration Failed',
-        description: 'Could not create account. Please try again.',
-        variant: 'destructive',
-      });
       throw error;
     }
   };
@@ -106,10 +83,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setUser(null);
-      toast({
-        title: 'Logged Out',
-        description: 'You have been successfully logged out.',
-      });
     } catch (error) {
       console.error('Logout error:', error);
       // Still clear local storage even if API call fails
