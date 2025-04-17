@@ -53,7 +53,8 @@ func (m *AuthMiddleware) AuthenticateJWT() fiber.Handler {
 			})
 		}
 
-		myClaims, err := claimToModelJWTToken(tokenClaims)
+		claims := tokenClaims.Claims.(jwt.MapClaims)
+		myClaims, err := claimToModelJWTToken(claims)
 		if err != nil {
 			m.Logger.Warnf(fmt.Sprintf("failed to convert claims to model: %s", err.Error()), zap.Error(err))
 			return c.Status(fiber.StatusUnauthorized).JSON(payload.BaseResponse{
@@ -124,7 +125,7 @@ func (m *AuthMiddleware) extractClaims(tokenString string) (*jwt.Token, error) {
 	return cleanedClaims, nil
 }
 
-func claimToModelJWTToken(claims *jwt.Token) (model.JWTToken, error) {
+func claimToModelJWTToken(claims jwt.MapClaims) (model.JWTToken, error) {
 	myClaim := model.JWTToken{}
 	errMarshall := mapstructure.Decode(claims, &myClaim)
 	if errMarshall != nil {
