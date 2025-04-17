@@ -53,7 +53,7 @@ func (s *server) ServerRun() {
 		Repository:         s.Repository,
 	}, f)
 
-	address := fmt.Sprintf(":%s", s.Option.Config.Application.Port)
+	address := fmt.Sprintf(":%v", s.Option.Config.Application.Port)
 
 	// Start the server
 	if err := f.Listen(address); err != nil {
