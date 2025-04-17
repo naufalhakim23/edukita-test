@@ -25,10 +25,17 @@ type (
 
 		// Create User Teacher
 		CreateTeacher(ctx context.Context, teacher model.Teacher, tx *sqlx.Tx) (docs model.Teacher, err error)
-		// GetTeacherByEmail(ctx context.Context, email string, tx *sqlx.Tx) (docs model.Teacher, err error)
-		// GetTeacherByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Teacher, err error)
-		// UpdateTeacherByID(ctx context.Context, teacher model.Teacher, tx *sqlx.Tx) (docs model.Teacher, err error)
-		// DeleteTeacherByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Teacher, err error)
+		GetTeacherByEmail(ctx context.Context, email string, tx *sqlx.Tx) (docs model.Teacher, err error)
+		GetTeacherByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Teacher, err error)
+		UpdateTeacherByID(ctx context.Context, teacher model.Teacher, tx *sqlx.Tx) (docs model.Teacher, err error)
+		DeleteTeacherByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Teacher, err error)
+
+		// Create User Student
+		CreateStudent(ctx context.Context, student model.Student, tx *sqlx.Tx) (docs model.Student, err error)
+		GetStudentByEmail(ctx context.Context, email string, tx *sqlx.Tx) (docs model.Student, err error)
+		GetStudentByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Student, err error)
+		UpdateStudentByID(ctx context.Context, student model.Student, tx *sqlx.Tx) (docs model.Student, err error)
+		DeleteStudentByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Student, err error)
 	}
 	UserRepository struct {
 		RepositoryOption
@@ -160,5 +167,236 @@ func (r *UserRepository) DeleteUserByID(ctx context.Context, id string, tx *sqlx
 }
 
 func (r *UserRepository) CreateTeacher(ctx context.Context, teacher model.Teacher, tx *sqlx.Tx) (docs model.Teacher, err error) {
+	query, _, err := goqu.Insert(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_TEACHERS)).
+		Rows(teacher).
+		Prepared(true).
+		Returning("*").
+		ToSQL()
+	if err != nil {
+		return
+	}
+
+	if err = tx.QueryRowContext(ctx, query).Scan(&docs); err != nil {
+		err = pkg.NewDatabaseError(err)
+		return
+	}
+
+	return
+}
+
+func (r *UserRepository) GetTeacherByEmail(ctx context.Context, email string, tx *sqlx.Tx) (docs model.Teacher, err error) {
+	query, _, err := goqu.Select("*").
+		From(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_TEACHERS)).
+		Where(
+			goqu.Ex{"email": email},
+			goqu.Ex{"is_active": true},
+		).
+		Prepared(true).
+		ToSQL()
+	if err != nil {
+		return
+	}
+
+	if err = tx.GetContext(ctx, &docs, query); err != nil {
+		if err == sql.ErrNoRows {
+			err = &pkg.AppError{
+				Code:       "TEACHER_NOT_FOUND",
+				Message:    "teacher not found",
+				StatusCode: http.StatusNotFound,
+				Err:        fmt.Errorf("teacher not found"),
+			}
+		} else {
+			err = pkg.NewDatabaseError(err)
+			return
+		}
+		return
+	}
+	return
+}
+
+func (r *UserRepository) GetTeacherByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Teacher, err error) {
+	query, _, err := goqu.Select("*").
+		From(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_TEACHERS)).
+		Where(
+			goqu.Ex{"id": id},
+			goqu.Ex{"is_active": true},
+		).
+		Prepared(true).
+		ToSQL()
+	if err != nil {
+		return
+	}
+
+	if err = tx.GetContext(ctx, &docs, query); err != nil {
+		if err == sql.ErrNoRows {
+			err = &pkg.AppError{
+				Code:       "TEACHER_NOT_FOUND",
+				Message:    "teacher not found",
+				StatusCode: http.StatusNotFound,
+				Err:        fmt.Errorf("teacher not found"),
+			}
+		} else {
+			err = pkg.NewDatabaseError(err)
+			return
+		}
+		return
+	}
+	return
+}
+
+func (r *UserRepository) UpdateTeacherByID(ctx context.Context, teacher model.Teacher, tx *sqlx.Tx) (docs model.Teacher, err error) {
+	query, _, err := goqu.From(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_TEACHERS)).
+		Update().
+		Set(teacher).
+		Where(goqu.Ex{"id": teacher.UserID}).
+		Prepared(true).
+		Returning("*").
+		ToSQL()
+	if err != nil {
+		return
+	}
+
+	if err = tx.QueryRowxContext(ctx, query).Scan(&docs); err != nil {
+		err = pkg.NewDatabaseError(err)
+		return
+	}
+
+	return
+}
+
+func (r *UserRepository) DeleteTeacherByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Teacher, err error) {
+	query, _, err := goqu.From(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_TEACHERS)).
+		Update().
+		Set(goqu.Record{"deleted_at": time.Now()}).
+		Where(goqu.Ex{"id": id}).
+		Prepared(true).
+		Returning("*").
+		ToSQL()
+	if err != nil {
+		return
+	}
+
+	if err = tx.QueryRowxContext(ctx, query).Scan(&docs); err != nil {
+		err = pkg.NewDatabaseError(err)
+		return
+	}
+
+	return
+}
+
+func (r *UserRepository) CreateStudent(ctx context.Context, student model.Student, tx *sqlx.Tx) (docs model.Student, err error) {
+	query, _, err := goqu.Insert(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_STUDENTS)).
+		Rows(student).
+		Prepared(true).
+		Returning("*").
+		ToSQL()
+	if err != nil {
+		return
+	}
+
+	if err = tx.QueryRowContext(ctx, query).Scan(&docs); err != nil {
+		err = pkg.NewDatabaseError(err)
+		return
+	}
+
+	return
+}
+
+func (r *UserRepository) GetStudentByEmail(ctx context.Context, email string, tx *sqlx.Tx) (docs model.Student, err error) {
+	query, _, err := goqu.Select("*").
+		From(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_STUDENTS)).
+		Where(
+			goqu.Ex{"email": email},
+			goqu.Ex{"is_active": true},
+		).
+		Prepared(true).
+		ToSQL()
+	if err != nil {
+		return
+	}
+
+	if err = tx.GetContext(ctx, &docs, query); err != nil {
+		if err == sql.ErrNoRows {
+			err = &pkg.AppError{
+				Code:       "STUDENT_NOT_FOUND",
+				Message:    "student not found",
+				StatusCode: http.StatusNotFound,
+				Err:        fmt.Errorf("student not found"),
+			}
+		} else {
+			err = pkg.NewDatabaseError(err)
+			return
+		}
+		return
+	}
+	return
+}
+
+func (r *UserRepository) GetStudentByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Student, err error) {
+	query, _, err := goqu.Select("*").
+		From(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_STUDENTS)).
+		Where(
+			goqu.Ex{"id": id},
+			goqu.Ex{"is_active": true},
+		).
+		Prepared(true).
+		ToSQL()
+	if err != nil {
+		return
+	}
+	if err = tx.GetContext(ctx, &docs, query); err != nil {
+		if err == sql.ErrNoRows {
+			err = &pkg.AppError{
+				Code:       "STUDENT_NOT_FOUND",
+				Message:    "student not found",
+				StatusCode: http.StatusNotFound,
+				Err:        fmt.Errorf("student not found"),
+			}
+		} else {
+			err = pkg.NewDatabaseError(err)
+			return
+		}
+		return
+	}
+	return
+}
+
+func (r *UserRepository) UpdateStudentByID(ctx context.Context, student model.Student, tx *sqlx.Tx) (docs model.Student, err error) {
+	query, _, err := goqu.From(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_STUDENTS)).
+		Update().
+		Set(student).
+		Where(goqu.Ex{"id": student.UserID}).
+		Prepared(true).
+		Returning("*").
+		ToSQL()
+	if err != nil {
+		return
+	}
+
+	if err = tx.QueryRowxContext(ctx, query).Scan(&docs); err != nil {
+		err = pkg.NewDatabaseError(err)
+		return
+	}
+
+	return
+}
+
+func (r *UserRepository) DeleteStudentByID(ctx context.Context, id string, tx *sqlx.Tx) (docs model.Student, err error) {
+	query, _, err := goqu.From(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_STUDENTS)).
+		Update().
+		Set(goqu.Record{"deleted_at": time.Now()}).
+		Where(goqu.Ex{"id": id}).
+		Prepared(true).
+		Returning("*").
+		ToSQL()
+	if err != nil {
+		return
+	}
+
+	if err = tx.QueryRowxContext(ctx, query).Scan(&docs); err != nil {
+		err = pkg.NewDatabaseError(err)
+		return
+	}
+
 	return
 }

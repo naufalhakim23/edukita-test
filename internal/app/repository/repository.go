@@ -16,7 +16,8 @@ type RepositoryOption struct {
 }
 
 type Repository struct {
-	User IUserRepository
+	User               IUserRepository
+	LearningManagement ILearningManagementRepository
 }
 
 func TransactionWrapper(ctx context.Context, db *sqlx.DB, fn func(tx *sqlx.Tx) error) error {
