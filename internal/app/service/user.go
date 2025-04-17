@@ -18,6 +18,7 @@ import (
 type (
 	IUserService interface {
 		RegisterUser(ctx context.Context, requestBody payload.RegisterUserRequest) (response *payload.RegisterUserResponse, err error)
+		LoginUser(ctx context.Context, requestBody *payload.LoginUserRequest) (response *payload.LoginUserResponse, err error)
 		GetUserByEmail(ctx context.Context, email string) (response *payload.GetUserResponse, err error)
 		GetUserByID(ctx context.Context, id string) (response *payload.GetUserResponse, err error)
 	}
@@ -85,13 +86,46 @@ func (s *UserService) RegisterUser(ctx context.Context, requestBody payload.Regi
 			return
 		}
 
+		token, err := GenerateJWTToken(user, s.Config.Application.Secret, s.Config.Cookies.SSOExpired)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to generate token: %s", err.Error()), zap.Error(err))
+			return err
+		}
+
 		response = &payload.RegisterUserResponse{
 			ID:        user.ID.String(),
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
 			Email:     user.Email,
 			Role:      user.Role,
+			Token:     token,
 		}
+
+		return
+	})
+}
+
+func (s *UserService) LoginUser(ctx context.Context, requestBody *payload.LoginUserRequest) (response *payload.LoginUserResponse, err error) {
+	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
+		user, err := s.Repository.User.GetUserByEmail(ctx, requestBody.Email, tx)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to get user by email: %s", err.Error()), zap.Error(err))
+			return
+		}
+
+		if !user.CheckPassword(requestBody.Password) {
+			err = pkg.NewBadRequestError("invalid password", nil)
+			s.Logger.Warnf("invalid password: %s", user.Role, zap.Error(err))
+			return
+		}
+
+		token, err := GenerateJWTToken(user, s.Config.Application.Secret, s.Config.Cookies.SSOExpired)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to generate token: %s", err.Error()), zap.Error(err))
+			return err
+		}
+
+		response.Token = token
 
 		return
 	})

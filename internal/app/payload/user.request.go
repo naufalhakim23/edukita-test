@@ -8,3 +8,8 @@ type RegisterUserRequest struct {
 	Role      string `json:"role"`
 	Program   string `json:"program"`
 }
+
+type LoginUserRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}

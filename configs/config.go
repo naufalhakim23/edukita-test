@@ -3,6 +3,7 @@ package configs
 import (
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
@@ -12,6 +13,7 @@ import (
 type (
 	Config struct {
 		Application Application
+		Cookies     Cookies
 		Postgresql  Postgresql
 	}
 	Application struct {
@@ -22,6 +24,10 @@ type (
 		StaticToken string
 		CostBcrypt  int
 		SwaggerPath string
+	}
+	Cookies struct {
+		AccessToken string
+		SSOExpired  time.Duration
 	}
 	Postgresql struct {
 		Name string
@@ -43,12 +49,17 @@ func LoadConfigurations(fileName string) (*Config, error) {
 		CostBcrypt:  getEnvAsInt("APP_COST_BCRYPT", bcrypt.DefaultCost),
 		SwaggerPath: GetEnv("APP_SWAGGER_PATH", ""),
 	}
+	cookies := Cookies{
+		AccessToken: GetEnv("COOKIES_ACCESS_TOKEN", "edukita_lms"),
+		SSOExpired:  time.Hour * 24 * 7,
+	}
 	psql := Postgresql{
 		Name: GetEnv("POSTGRES_NAME", "edukita-teaching-grading"),
 		URL:  GetEnv("POSTGRES_URL", "localhost:5432"),
 	}
 	cfg := Config{
 		Application: app,
+		Cookies:     cookies,
 		Postgresql:  psql,
 	}
 	return &cfg, nil
