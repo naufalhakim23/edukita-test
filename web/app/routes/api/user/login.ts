@@ -1,7 +1,7 @@
 import { json } from '@tanstack/react-start'
 import { createAPIFileRoute } from '@tanstack/react-start/api'
 import { LMS_BACKEND_URL } from '@/utils/env'
-import { IResponse, UserLoginResponse } from '@/utils/user'
+import { IResponse, UserLoginResponse } from '@/types/user'
 
 export const APIRoute = createAPIFileRoute('/api/user/login')({
   POST: async ({ request }) => {
