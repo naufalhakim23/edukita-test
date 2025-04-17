@@ -1,48 +1,37 @@
-// app/routes/index.tsx
-import * as fs from 'node:fs'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
-
-const filePath = 'count.txt'
-
-async function readCount() {
-  return parseInt(
-    await fs.promises.readFile(filePath, 'utf-8').catch(() => '0'),
-  )
-}
-
-const getCount = createServerFn({
-  method: 'GET',
-}).handler(() => {
-  return readCount()
-})
-
-const updateCount = createServerFn({ method: 'POST' })
-  .validator((d: number) => d)
-  .handler(async ({ data }) => {
-    const count = await readCount()
-    await fs.promises.writeFile(filePath, `${count + data}`)
-  })
+import { ProtectedRoute } from '@/context/AuthContext'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  component: Home,
-  loader: async () => await getCount(),
+  component: () => (
+      <ProtectedRoute>
+        <Home />
+      </ProtectedRoute>
+  ),
 })
 
 function Home() {
-  const router = useRouter()
-  const state = Route.useLoaderData()
-
   return (
-    <button
-      type="button" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      onClick={() => {
-        updateCount({ data: 1 }).then(() => {
-          router.invalidate()
-        })
-      }}
-    >
-      Add 1 to {state}?
-    </button>
+    <div className="min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Welcome to LMS Dashboard</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-2">Assignments</h2>
+            <p className="text-gray-600">View and manage your assignments</p>
+            <Link to="/assignments" className="mt-4 inline-block text-blue-600 hover:text-blue-800">View Assignments →</Link>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-2">Submissions</h2>
+            <p className="text-gray-600">Track your submission progress</p>
+            <Link to="/submissions" className="mt-4 inline-block text-blue-600 hover:text-blue-800">View Submissions →</Link>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-2">Profile</h2>
+            <p className="text-gray-600">Manage your account settings</p>
+            <Link to="/profile" className="mt-4 inline-block text-blue-600 hover:text-blue-800">View Profile →</Link>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

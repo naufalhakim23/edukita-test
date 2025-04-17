@@ -11,14 +11,35 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SubmissionsImport } from './routes/submissions'
+import { Route as ProfileImport } from './routes/profile'
 import { Route as AuthImport } from './routes/auth'
+import { Route as AssignmentsImport } from './routes/assignments'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
 
+const SubmissionsRoute = SubmissionsImport.update({
+  id: '/submissions',
+  path: '/submissions',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProfileRoute = ProfileImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const AuthRoute = AuthImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AssignmentsRoute = AssignmentsImport.update({
+  id: '/assignments',
+  path: '/assignments',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -39,11 +60,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/assignments': {
+      id: '/assignments'
+      path: '/assignments'
+      fullPath: '/assignments'
+      preLoaderRoute: typeof AssignmentsImport
+      parentRoute: typeof rootRoute
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthImport
+      parentRoute: typeof rootRoute
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileImport
+      parentRoute: typeof rootRoute
+    }
+    '/submissions': {
+      id: '/submissions'
+      path: '/submissions'
+      fullPath: '/submissions'
+      preLoaderRoute: typeof SubmissionsImport
       parentRoute: typeof rootRoute
     }
   }
@@ -53,37 +95,52 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assignments': typeof AssignmentsRoute
   '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
+  '/submissions': typeof SubmissionsRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assignments': typeof AssignmentsRoute
   '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
+  '/submissions': typeof SubmissionsRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/assignments': typeof AssignmentsRoute
   '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
+  '/submissions': typeof SubmissionsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth'
+  fullPaths: '/' | '/assignments' | '/auth' | '/profile' | '/submissions'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth'
-  id: '__root__' | '/' | '/auth'
+  to: '/' | '/assignments' | '/auth' | '/profile' | '/submissions'
+  id: '__root__' | '/' | '/assignments' | '/auth' | '/profile' | '/submissions'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssignmentsRoute: typeof AssignmentsRoute
   AuthRoute: typeof AuthRoute
+  ProfileRoute: typeof ProfileRoute
+  SubmissionsRoute: typeof SubmissionsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssignmentsRoute: AssignmentsRoute,
   AuthRoute: AuthRoute,
+  ProfileRoute: ProfileRoute,
+  SubmissionsRoute: SubmissionsRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +154,26 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/auth"
+        "/assignments",
+        "/auth",
+        "/profile",
+        "/submissions"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
+    "/assignments": {
+      "filePath": "assignments.tsx"
+    },
     "/auth": {
       "filePath": "auth.tsx"
+    },
+    "/profile": {
+      "filePath": "profile.tsx"
+    },
+    "/submissions": {
+      "filePath": "submissions.tsx"
     }
   }
 }

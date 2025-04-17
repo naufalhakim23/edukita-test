@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { IResponse, RegisterUserRequest, RegisterUserResponse } from "@/utils/user"
+import { IResponse, RegisterUserRequest, RegisterUserResponse } from "@/types/user"
 import { redirect, Router, useRouter } from "@tanstack/react-router"
 import { useMutation } from "@tanstack/react-query"
 
@@ -74,7 +74,7 @@ export function AuthForm({
           setError("Authentication failed, please try again");
         }
       } else {
-        router.navigate({ to: '/dashboard' });
+        router.navigate({ to: '/' });
       }
     },
     onError: (error) => {
