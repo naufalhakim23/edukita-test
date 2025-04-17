@@ -6,4 +6,5 @@ type RegisterUserRequest struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Role      string `json:"role"`
+	Program   string `json:"program"`
 }
