@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: edukita-lms-migrations
+spec:
+  template:
+    spec:
+      containers:
+      - name: migrations
+        image: edukita-lms:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - cd /usr/local/bin && ./edukita-teaching-grading migrate up
+        envFrom:
+        - configMapRef:
+            name: edukita-lms-config
+        - secretRef:
+            name: edukita-lms-secrets
+      restartPolicy: OnFailure
+  backoffLimit: 4

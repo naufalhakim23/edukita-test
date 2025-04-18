@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: edukita-lms-config
+data:
+  APP_NAME: "edukita-teaching-grading"
+  APP_ENV: "production"
+  APP_PORT: "8080"
+  APP_SWAGGER_PATH: ""
+  POSTGRES_NAME: "edukita-teaching-grading"
+  POSTGRES_USER: "postgres"
+  POSTGRES_DB: "edukita_lms"
