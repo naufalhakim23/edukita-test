@@ -18,7 +18,7 @@ import (
 
 type (
 	IUserService interface {
-		RegisterUser(ctx context.Context, requestBody payload.RegisterUserRequest) (response *payload.RegisterUserResponse, err error)
+		RegisterUser(ctx context.Context, requestBody payload.RegisterUserRequest) (response payload.RegisterUserResponse, err error)
 		LoginUser(ctx context.Context, requestBody *payload.LoginUserRequest) (response payload.LoginUserResponse, err error)
 		GetUserByID(ctx context.Context, id string) (response payload.GetUserResponse, err error)
 		LogoutUser(ctx context.Context, id string) (response payload.LogoutUserResponse, err error)
@@ -34,7 +34,7 @@ func InitiateUserService(opt ServiceOption) IUserService {
 	}
 }
 
-func (s *UserService) RegisterUser(ctx context.Context, requestBody payload.RegisterUserRequest) (response *payload.RegisterUserResponse, err error) {
+func (s *UserService) RegisterUser(ctx context.Context, requestBody payload.RegisterUserRequest) (response payload.RegisterUserResponse, err error) {
 	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
 		now := time.Now()
 		user, err := s.Repository.User.GetUserByEmail(ctx, requestBody.Email, tx)
@@ -101,7 +101,7 @@ func (s *UserService) RegisterUser(ctx context.Context, requestBody payload.Regi
 			return
 		}
 
-		response = &payload.RegisterUserResponse{
+		response = payload.RegisterUserResponse{
 			ID:        user.ID.String(),
 			FirstName: user.FirstName,
 			LastName:  user.LastName,

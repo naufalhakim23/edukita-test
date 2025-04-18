@@ -22,11 +22,18 @@ func Router(option handler.HandlerOptions, f *fiber.App) {
 	userGroup.Get("/:id", authMiddleware.AuthenticateJWT(), user.GetUserByID)
 
 	lmsGroup := v1.Group("/lms")
+	lmsGroup.Post("/courses", authMiddleware.AuthenticateJWT(), lms.CreateCourse)
+	lmsGroup.Get("/courses/:id", authMiddleware.AuthenticateJWT(), lms.GetCourseByID)
+	lmsGroup.Get("/courses/:code", authMiddleware.AuthenticateJWT(), lms.GetCourseByCode)
+	lmsGroup.Get("/courses", authMiddleware.AuthenticateJWT(), lms.GetAllCourses)
+	lmsGroup.Put("/courses/:id", authMiddleware.AuthenticateJWT(), lms.UpdateCourseByID)
+
 	lmsGroup.Post("/assignments", authMiddleware.AuthenticateJWT(), lms.CreateAssignment)
 	lmsGroup.Get("/assignments/:id", authMiddleware.AuthenticateJWT(), lms.GetAssignmentByID)
 	lmsGroup.Put("/assignments/:id", authMiddleware.AuthenticateJWT(), lms.UpdateAssignmentByID)
 
 	lmsGroup.Post("/submissions", authMiddleware.AuthenticateJWT(), lms.CreateSubmission)
+	lmsGroup.Get("/submissions/course/:id", authMiddleware.AuthenticateJWT(), lms.GetAllSubmissionsByCourseID)
 	lmsGroup.Get("/submissions/:id", authMiddleware.AuthenticateJWT(), lms.GetSubmissionByID)
 	lmsGroup.Put("/submissions/:id", authMiddleware.AuthenticateJWT(), lms.UpdateSubmissionByID)
 

@@ -14,6 +14,253 @@ type LMSHandler struct {
 	HandlerOptions
 }
 
+func (h *LMSHandler) CreateCourse(c *fiber.Ctx) (err error) {
+	var (
+		claim = c.Locals("mw.auth.claims").(model.JWTToken)
+		e     *pkg.AppError
+	)
+	req := new(payload.CreateCourseRequest)
+	if err = c.BodyParser(req); err != nil {
+		return
+	}
+
+	v := NewValidator()
+	if errs := v.Validate(req); len(errs) > 0 {
+		return c.Status(http.StatusBadRequest).JSON(payload.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid request body",
+			Error:   errs,
+		},
+		)
+	}
+
+	if claim.UUID == "" {
+		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "unauthorized",
+		},
+		)
+	}
+
+	res, err := h.Service.LearningManagement.CreateCourse(c.Context(), req)
+	if err != nil {
+		resError := payload.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Error:   err,
+		}
+		if errors.As(err, &e) {
+			resError.Status = e.StatusCode
+			resError.Message = e.Message
+			resError.Error = e.Err
+		} else {
+			resError.Status = http.StatusInternalServerError
+		}
+		return c.Status(resError.Status).JSON(resError)
+	}
+
+	response := payload.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data:    res,
+	}
+	return c.Status(http.StatusOK).JSON(response)
+}
+
+func (h *LMSHandler) GetCourseByID(c *fiber.Ctx) (err error) {
+	var (
+		claim = c.Locals("mw.auth.claims").(model.JWTToken)
+		e     *pkg.AppError
+	)
+	query := c.Params("id")
+	if query == "" {
+		return c.Status(http.StatusBadRequest).JSON(payload.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "id is required",
+		},
+		)
+	}
+
+	if claim.UUID == "" {
+		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "unauthorized",
+		},
+		)
+	}
+
+	res, err := h.Service.LearningManagement.GetCourseByID(c.Context(), query)
+	if err != nil {
+		resError := payload.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Error:   err,
+		}
+		if errors.As(err, &e) {
+			resError.Status = e.StatusCode
+			resError.Message = e.Message
+			resError.Error = e.Err
+		} else {
+			resError.Status = http.StatusInternalServerError
+		}
+		return c.Status(resError.Status).JSON(resError)
+	}
+
+	response := payload.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data:    res,
+	}
+	return c.Status(http.StatusOK).JSON(response)
+}
+
+func (h *LMSHandler) GetCourseByCode(c *fiber.Ctx) (err error) {
+	var (
+		claim = c.Locals("mw.auth.claims").(model.JWTToken)
+		e     *pkg.AppError
+	)
+	query := c.Params("code")
+	if query == "" {
+		return c.Status(http.StatusBadRequest).JSON(payload.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "code is required",
+		},
+		)
+	}
+
+	if claim.UUID == "" {
+		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "unauthorized",
+		},
+		)
+	}
+
+	res, err := h.Service.LearningManagement.GetCourseByCode(c.Context(), query)
+	if err != nil {
+		resError := payload.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Error:   err,
+		}
+		if errors.As(err, &e) {
+			resError.Status = e.StatusCode
+			resError.Message = e.Message
+			resError.Error = e.Err
+		} else {
+			resError.Status = http.StatusInternalServerError
+		}
+		return c.Status(resError.Status).JSON(resError)
+	}
+
+	response := payload.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data:    res,
+	}
+	return c.Status(http.StatusOK).JSON(response)
+}
+
+func (h *LMSHandler) GetAllCourses(c *fiber.Ctx) (err error) {
+	var (
+		claim = c.Locals("mw.auth.claims").(model.JWTToken)
+		e     *pkg.AppError
+	)
+	if claim.UUID == "" {
+		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "unauthorized",
+		},
+		)
+	}
+
+	res, err := h.Service.LearningManagement.GetAllCourses(c.Context())
+	if err != nil {
+		resError := payload.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Error:   err,
+		}
+		if errors.As(err, &e) {
+			resError.Status = e.StatusCode
+			resError.Message = e.Message
+			resError.Error = e.Err
+		} else {
+			resError.Status = http.StatusInternalServerError
+		}
+		return c.Status(resError.Status).JSON(resError)
+	}
+
+	response := payload.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data:    res,
+	}
+	return c.Status(http.StatusOK).JSON(response)
+}
+
+func (h *LMSHandler) UpdateCourseByID(c *fiber.Ctx) (err error) {
+	var (
+		claim = c.Locals("mw.auth.claims").(model.JWTToken)
+		id    = c.Params("id")
+		e     *pkg.AppError
+	)
+	if id == "" {
+		return c.Status(http.StatusBadRequest).JSON(payload.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "id is required",
+		},
+		)
+	}
+
+	req := new(payload.UpdateCourseRequest)
+	if err = c.BodyParser(req); err != nil {
+		return
+	}
+
+	v := NewValidator()
+	if errs := v.Validate(req); len(errs) > 0 {
+		return c.Status(http.StatusBadRequest).JSON(payload.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid request body",
+			Error:   errs,
+		},
+		)
+	}
+
+	if claim.UUID == "" {
+		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "unauthorized",
+		},
+		)
+	}
+
+	res, err := h.Service.LearningManagement.UpdateCourseByID(c.Context(), id, req)
+	if err != nil {
+		resError := payload.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Error:   err,
+		}
+		if errors.As(err, &e) {
+			resError.Status = e.StatusCode
+			resError.Message = e.Message
+			resError.Error = e.Err
+		} else {
+			resError.Status = http.StatusInternalServerError
+		}
+		return c.Status(resError.Status).JSON(resError)
+	}
+
+	response := payload.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data:    res,
+	}
+	return c.Status(http.StatusOK).JSON(response)
+}
+
 func (h *LMSHandler) CreateAssignment(c *fiber.Ctx) (err error) {
 	var (
 		claim = c.Locals("mw.auth.claims").(model.JWTToken)
@@ -72,7 +319,7 @@ func (h *LMSHandler) GetAssignmentByID(c *fiber.Ctx) (err error) {
 		claim = c.Locals("mw.auth.claims").(model.JWTToken)
 		e     *pkg.AppError
 	)
-	query := c.Query("id")
+	query := c.Params("id")
 	if query == "" {
 		return c.Status(http.StatusBadRequest).JSON(payload.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -234,7 +481,7 @@ func (h *LMSHandler) GetSubmissionByID(c *fiber.Ctx) (err error) {
 		claim = c.Locals("mw.auth.claims").(model.JWTToken)
 		e     *pkg.AppError
 	)
-	query := c.Query("id")
+	query := c.Params("id")
 	if query == "" {
 		return c.Status(http.StatusBadRequest).JSON(payload.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -314,6 +561,53 @@ func (h *LMSHandler) UpdateSubmissionByID(c *fiber.Ctx) (err error) {
 	}
 
 	res, err := h.Service.LearningManagement.UpdateSubmissionByID(c.Context(), id, req)
+	if err != nil {
+		resError := payload.BaseResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Error:   err,
+		}
+		if errors.As(err, &e) {
+			resError.Status = e.StatusCode
+			resError.Message = e.Message
+			resError.Error = e.Err
+		} else {
+			resError.Status = http.StatusInternalServerError
+		}
+		return c.Status(resError.Status).JSON(resError)
+	}
+
+	response := payload.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data:    res,
+	}
+	return c.Status(http.StatusOK).JSON(response)
+}
+
+func (h *LMSHandler) GetAllSubmissionsByCourseID(c *fiber.Ctx) (err error) {
+	var (
+		claim = c.Locals("mw.auth.claims").(model.JWTToken)
+		e     *pkg.AppError
+	)
+	query := c.Params("id")
+	if query == "" {
+		return c.Status(http.StatusBadRequest).JSON(payload.BaseResponse{
+			Status:  http.StatusBadRequest,
+			Message: "id is required",
+		},
+		)
+	}
+
+	if claim.UUID == "" {
+		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "unauthorized",
+		},
+		)
+	}
+
+	res, err := h.Service.LearningManagement.GetAllSubmissionsByCourseID(c.Context(), query, claim.UUID)
 	if err != nil {
 		resError := payload.BaseResponse{
 			Status:  http.StatusInternalServerError,

@@ -323,13 +323,13 @@ func (r *UserRepository) GetStudentByID(ctx context.Context, id string, tx *sqlx
 	query, _, err := goqu.Select("*").
 		From(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_STUDENTS)).
 		Where(
-			goqu.Ex{"id": id},
-			goqu.Ex{"is_active": true},
+			goqu.Ex{"user_id": id},
 		).
 		ToSQL()
 	if err != nil {
 		return
 	}
+
 	if err = tx.GetContext(ctx, &docs, query); err != nil {
 		if err == sql.ErrNoRows {
 			err = &pkg.AppError{
