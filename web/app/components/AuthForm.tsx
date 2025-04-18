@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectValue } from "./ui/select"
 import { IResponse, RegisterUserRequest, RegisterUserResponse } from "@/types/user"
 import { redirect, Router, useRouter } from "@tanstack/react-router"
 import { useMutation } from "@tanstack/react-query"
+import { SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger } from "@/components/ui/select"
 
 export function AuthForm({
   className,
@@ -14,13 +16,11 @@ export function AuthForm({
 }: React.ComponentProps<"div">) {
   const [isLogin, setIsLogin] = useState(true)
   const [formData, setFormData] = useState<RegisterUserRequest>({
-    name: "",
     email: "",
     password: "",
     first_name: "",
     last_name: "",
     role: "",
-    confirm_password: "",
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -86,11 +86,6 @@ export function AuthForm({
     e.preventDefault();
     setError("");
     
-    if (!isLogin && formData.password !== formData.confirm_password) {
-      setError("Passwords do not match");
-      return;
-    }
-    
     // Trigger the mutation with the form data
     authMutation.mutate(formData);
   };
@@ -151,18 +146,53 @@ export function AuthForm({
 
               {!isLogin && (
                 <div className="grid gap-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="first_name">First Name</Label>
                   <Input 
-                    id="confirmPassword" 
-                    type="password" 
-                    value={formData.confirm_password}
+                    id="first_name" 
+                    type="text" 
+                    value={formData.first_name}
+                    onChange={handleChange}
+                    required 
+                  />
+                </div>
+              )}
+              {!isLogin && (
+                <div className="grid gap-2">
+                  <Label htmlFor="last_name">Last Name</Label>
+                  <Input 
+                    id="last_name" 
+                    type="text" 
+                    value={formData.last_name}
                     onChange={handleChange}
                     required 
                   />
                 </div>
               )}
 
+{!isLogin && (
+  <div className="grid gap-2">
+    <Label htmlFor="role">Role</Label>
+    <Select
+      value={formData.role}
+      onValueChange={value => setFormData(prev => ({ ...prev, role: value }))}
+      required
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select a role" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>Role</SelectLabel>
+          <SelectItem value="teacher">Teacher</SelectItem>
+          <SelectItem value="student">Student</SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  </div>
+)}
 
+
+              
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Processing...": isLogin ? "Login" : "Sign up"}
               </Button>
