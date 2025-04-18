@@ -93,13 +93,61 @@ Create a `.env` file in the root directory using the provided template:
 cp .env.example .env
 ```
 
-Update the PostgreSQL connection string in the `.env` file to use the Docker service name:
+**Important**: Update the PostgreSQL connection string in the `.env` file to use the Docker service name:
 
 ```
 POSTGRES_URL="postgres://postgres:postgresql@postgres:5432/edukita_lms?sslmode=disable"
 ```
 
-#### 3. Build and run with Docker Compose
+This is critical for proper connectivity between containers. The hostname `postgres` will resolve to the PostgreSQL container within the Docker network.
+
+#### 3. Create a docker-compose.yml file
+
+Create a `docker-compose.yml` file in the root directory with the following content:
+
+```yaml
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgresql
+      POSTGRES_DB: edukita_lms
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - edukita-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: edukita-lms
+    container_name: edukita-lms-app
+    env_file:
+      - ./.env
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - edukita-network
+
+networks:
+  edukita-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+```
+
+#### 4. Build and run with Docker Compose
 
 ```bash
 docker-compose up -d
@@ -112,7 +160,7 @@ This will:
 
 The API will be available at `http://localhost:8081`.
 
-#### 4. Stop Docker containers
+#### 5. Stop Docker containers
 
 ```bash
 docker-compose down
