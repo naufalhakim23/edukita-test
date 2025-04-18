@@ -16,10 +16,10 @@ create-migration:
 	echo "Created migration files in $$dir"
 
 db-version:
-	go run migrations/script/main.go -db_version
+	go run migrations/scripts/main.go -version
 
 migrate-up:
-	go run migrations/script/main.go -migrate_up
+	go run migrations/scripts/main.go -up
 
 migrate-down:
-	go run migrations/script/main.go -migrate_down
+	go run migrations/scripts/main.go -down
