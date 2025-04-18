@@ -170,8 +170,6 @@ WORKDIR /usr/local/bin
 
 RUN apk --update add ca-certificates
 
-COPY --from=builder /build/run.sh /usr/local/bin/run.sh
-
 # copy docs (swagger API docs)
 COPY --from=builder /build/docs /usr/local/bin/docs
 
@@ -179,10 +177,7 @@ COPY --from=builder /build/migrations  /usr/local/bin/migrations
 
 COPY --from=builder /build/edukita-teaching-grading /usr/local/bin/edukita-teaching-grading
 
-RUN chmod 777 /usr/local/bin/run.sh
-
-
-CMD ["sh", "./run.sh"]
+CMD ["./edukita-teaching-grading"]
 
 ```
 
