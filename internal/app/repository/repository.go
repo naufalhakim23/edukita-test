@@ -52,12 +52,6 @@ func TransactionWrapper(ctx context.Context, db *sqlx.DB, fn func(tx *sqlx.Tx) e
 
 	if err := fn(tx); err != nil {
 		_ = tx.Rollback()
-		err = &pkg.AppError{
-			Code:       "DB_ERROR",
-			Message:    "Database error",
-			StatusCode: http.StatusInternalServerError,
-			Err:        err,
-		}
 		return err
 	}
 

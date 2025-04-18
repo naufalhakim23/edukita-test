@@ -3,7 +3,7 @@ package payload
 type BaseResponse struct {
 	Status  int         `json:"status"`
 	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+	Data    interface{} `json:"data,omitempty"`
 	Error   interface{} `json:"error,omitempty"`
 }
 

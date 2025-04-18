@@ -51,14 +51,13 @@ func InitiateUserRepository(opt RepositoryOption) IUserRepository {
 func (r *UserRepository) CreateUser(ctx context.Context, user model.User, tx *sqlx.Tx) (docs model.User, err error) {
 	query, _, err := goqu.Insert(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_USERS)).
 		Rows(user).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {
 		return
 	}
 
-	if err = tx.QueryRowContext(ctx, query).Scan(&docs); err != nil {
+	if err = tx.QueryRowxContext(ctx, query).StructScan(&docs); err != nil {
 		err = pkg.NewDatabaseError(err)
 		return
 	}
@@ -73,7 +72,6 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string, tx *s
 			goqu.Ex{"email": email},
 			goqu.Ex{"is_active": true},
 		).
-		Prepared(true).
 		ToSQL()
 	if err != nil {
 		return
@@ -103,7 +101,6 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string, tx *sqlx.Tx
 			goqu.Ex{"id": id},
 			goqu.Ex{"is_active": true},
 		).
-		Prepared(true).
 		ToSQL()
 	if err != nil {
 		return
@@ -131,14 +128,13 @@ func (r *UserRepository) UpdateUserByID(ctx context.Context, user model.User, tx
 		Update().
 		Set(user).
 		Where(goqu.Ex{"id": user.ID}).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {
 		return
 	}
 
-	if err = tx.QueryRowxContext(ctx, query).Scan(&docs); err != nil {
+	if err = tx.QueryRowxContext(ctx, query).StructScan(&docs); err != nil {
 		err = pkg.NewDatabaseError(err)
 		return
 	}
@@ -151,7 +147,6 @@ func (r *UserRepository) DeleteUserByID(ctx context.Context, id string, tx *sqlx
 		Update().
 		Set(goqu.Record{"deleted_at": time.Now()}).
 		Where(goqu.Ex{"id": id}).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {
@@ -169,14 +164,13 @@ func (r *UserRepository) DeleteUserByID(ctx context.Context, id string, tx *sqlx
 func (r *UserRepository) CreateTeacher(ctx context.Context, teacher model.Teacher, tx *sqlx.Tx) (docs model.Teacher, err error) {
 	query, _, err := goqu.Insert(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_TEACHERS)).
 		Rows(teacher).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {
 		return
 	}
 
-	if err = tx.QueryRowContext(ctx, query).Scan(&docs); err != nil {
+	if err = tx.QueryRowxContext(ctx, query).StructScan(&docs); err != nil {
 		err = pkg.NewDatabaseError(err)
 		return
 	}
@@ -191,7 +185,6 @@ func (r *UserRepository) GetTeacherByEmail(ctx context.Context, email string, tx
 			goqu.Ex{"email": email},
 			goqu.Ex{"is_active": true},
 		).
-		Prepared(true).
 		ToSQL()
 	if err != nil {
 		return
@@ -218,10 +211,8 @@ func (r *UserRepository) GetTeacherByID(ctx context.Context, id string, tx *sqlx
 	query, _, err := goqu.Select("*").
 		From(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_TEACHERS)).
 		Where(
-			goqu.Ex{"id": id},
-			goqu.Ex{"is_active": true},
+			goqu.Ex{"user_id": id},
 		).
-		Prepared(true).
 		ToSQL()
 	if err != nil {
 		return
@@ -248,15 +239,14 @@ func (r *UserRepository) UpdateTeacherByID(ctx context.Context, teacher model.Te
 	query, _, err := goqu.From(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_TEACHERS)).
 		Update().
 		Set(teacher).
-		Where(goqu.Ex{"id": teacher.UserID}).
-		Prepared(true).
+		Where(goqu.Ex{"user_id": teacher.UserID}).
 		Returning("*").
 		ToSQL()
 	if err != nil {
 		return
 	}
 
-	if err = tx.QueryRowxContext(ctx, query).Scan(&docs); err != nil {
+	if err = tx.QueryRowxContext(ctx, query).StructScan(&docs); err != nil {
 		err = pkg.NewDatabaseError(err)
 		return
 	}
@@ -269,14 +259,13 @@ func (r *UserRepository) DeleteTeacherByID(ctx context.Context, id string, tx *s
 		Update().
 		Set(goqu.Record{"deleted_at": time.Now()}).
 		Where(goqu.Ex{"id": id}).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {
 		return
 	}
 
-	if err = tx.QueryRowxContext(ctx, query).Scan(&docs); err != nil {
+	if err = tx.QueryRowxContext(ctx, query).StructScan(&docs); err != nil {
 		err = pkg.NewDatabaseError(err)
 		return
 	}
@@ -287,14 +276,13 @@ func (r *UserRepository) DeleteTeacherByID(ctx context.Context, id string, tx *s
 func (r *UserRepository) CreateStudent(ctx context.Context, student model.Student, tx *sqlx.Tx) (docs model.Student, err error) {
 	query, _, err := goqu.Insert(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_STUDENTS)).
 		Rows(student).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {
 		return
 	}
 
-	if err = tx.QueryRowContext(ctx, query).Scan(&docs); err != nil {
+	if err = tx.QueryRowxContext(ctx, query).StructScan(&docs); err != nil {
 		err = pkg.NewDatabaseError(err)
 		return
 	}
@@ -309,7 +297,6 @@ func (r *UserRepository) GetStudentByEmail(ctx context.Context, email string, tx
 			goqu.Ex{"email": email},
 			goqu.Ex{"is_active": true},
 		).
-		Prepared(true).
 		ToSQL()
 	if err != nil {
 		return
@@ -339,7 +326,6 @@ func (r *UserRepository) GetStudentByID(ctx context.Context, id string, tx *sqlx
 			goqu.Ex{"id": id},
 			goqu.Ex{"is_active": true},
 		).
-		Prepared(true).
 		ToSQL()
 	if err != nil {
 		return
@@ -366,7 +352,6 @@ func (r *UserRepository) UpdateStudentByID(ctx context.Context, student model.St
 		Update().
 		Set(student).
 		Where(goqu.Ex{"id": student.UserID}).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {
@@ -386,7 +371,6 @@ func (r *UserRepository) DeleteStudentByID(ctx context.Context, id string, tx *s
 		Update().
 		Set(goqu.Record{"deleted_at": time.Now()}).
 		Where(goqu.Ex{"id": id}).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {

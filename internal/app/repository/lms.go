@@ -39,14 +39,13 @@ func InitiateLearningManagementRepository(opt RepositoryOption) ILearningManagem
 func (r *LearningManagementRepository) CreateAssignment(ctx context.Context, assignment model.Assignment, tx *sqlx.Tx) (doc model.Assignment, err error) {
 	query, _, err := goqu.Insert(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_ASSIGNMENTS)).
 		Rows(assignment).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {
 		return
 	}
 
-	if err = tx.QueryRowContext(ctx, query).Scan(&doc); err != nil {
+	if err = tx.QueryRowxContext(ctx, query).Scan(&doc); err != nil {
 		err = pkg.NewDatabaseError(err)
 		return
 	}
@@ -60,7 +59,6 @@ func (r *LearningManagementRepository) GetAssignmentByID(ctx context.Context, id
 			goqu.Ex{"id": id},
 			goqu.Ex{"is_active": true},
 		).
-		Prepared(true).
 		ToSQL()
 	if err != nil {
 		return
@@ -91,7 +89,6 @@ func (r *LearningManagementRepository) GetAssignmentByTeacherID(ctx context.Cont
 			goqu.Ex{"teacher_id": id},
 			goqu.Ex{"is_active": true},
 		).
-		Prepared(true).
 		ToSQL()
 	if err != nil {
 		return
@@ -119,7 +116,6 @@ func (r *LearningManagementRepository) UpdateAssignmentByID(ctx context.Context,
 		Update().
 		Set(assignment).
 		Where(goqu.Ex{"id": assignment.ID}).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {
@@ -136,14 +132,13 @@ func (r *LearningManagementRepository) UpdateAssignmentByID(ctx context.Context,
 func (r *LearningManagementRepository) CreateSubmission(ctx context.Context, submission model.Submission, tx *sqlx.Tx) (doc model.Submission, err error) {
 	query, _, err := goqu.Insert(fmt.Sprintf("%s.%s", pkg.SCHEMA_NAME, pkg.TABLE_SUBMISSIONS)).
 		Rows(submission).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {
 		return
 	}
 
-	if err = tx.QueryRowContext(ctx, query).Scan(&doc); err != nil {
+	if err = tx.QueryRowxContext(ctx, query).Scan(&doc); err != nil {
 		err = pkg.NewDatabaseError(err)
 		return
 	}
@@ -156,7 +151,6 @@ func (r *LearningManagementRepository) GetSubmissionByID(ctx context.Context, id
 			goqu.Ex{"id": id},
 			goqu.Ex{"is_active": true},
 		).
-		Prepared(true).
 		ToSQL()
 	if err != nil {
 		return
@@ -186,7 +180,6 @@ func (r *LearningManagementRepository) GetAllSubmissionsByAssignmentID(ctx conte
 			goqu.Ex{"assignment_id": id},
 			goqu.Ex{"is_active": true},
 		).
-		Prepared(true).
 		ToSQL()
 	if err != nil {
 		return
@@ -214,7 +207,6 @@ func (r *LearningManagementRepository) UpdateSubmissionByID(ctx context.Context,
 		Update().
 		Set(submission).
 		Where(goqu.Ex{"id": submission.ID}).
-		Prepared(true).
 		Returning("*").
 		ToSQL()
 	if err != nil {

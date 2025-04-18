@@ -17,9 +17,7 @@ type UserHandler struct {
 }
 
 func (h *UserHandler) RegisterUser(c *fiber.Ctx) (err error) {
-	var (
-		e *pkg.AppError
-	)
+	var e *pkg.AppError
 	req := new(payload.RegisterUserRequest)
 	if err = c.BodyParser(req); err != nil {
 		return
@@ -40,12 +38,10 @@ func (h *UserHandler) RegisterUser(c *fiber.Ctx) (err error) {
 		resError := payload.BaseResponse{
 			Status:  http.StatusInternalServerError,
 			Message: err.Error(),
-			Error:   err,
 		}
 		if errors.As(err, &e) {
 			resError.Status = e.StatusCode
 			resError.Message = e.Message
-			resError.Error = e.Err
 		} else {
 			resError.Status = http.StatusInternalServerError
 		}
@@ -61,9 +57,7 @@ func (h *UserHandler) RegisterUser(c *fiber.Ctx) (err error) {
 }
 
 func (h *UserHandler) LoginUser(c *fiber.Ctx) (err error) {
-	var (
-		e *pkg.AppError
-	)
+	var e *pkg.AppError
 	req := new(payload.LoginUserRequest)
 	if err = c.BodyParser(req); err != nil {
 		return
@@ -106,32 +100,23 @@ func (h *UserHandler) LoginUser(c *fiber.Ctx) (err error) {
 		Name:     h.Config.Cookies.AccessToken,
 		Value:    res.Token,
 		Path:     "/",
-		Domain:   "localhost",
+		Domain:   h.Config.Cookies.Domain,
 		Expires:  time.Now().Add(h.Config.Cookies.SSOExpired),
-		Secure:   false,
 		HTTPOnly: false,
-		SameSite: "Lax",
+		SameSite: fiber.CookieSameSiteLaxMode,
 	}
 
 	c.Cookie(&setCookie)
 	return c.Status(http.StatusOK).JSON(response)
 }
 
-func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) (err error) {
+func (h *UserHandler) LogoutUser(c *fiber.Ctx) (err error) {
 	var (
 		claim = c.Locals("mw.auth.claims").(model.JWTToken)
 		e     *pkg.AppError
 	)
-	email := c.Query("email")
-	if email == "" {
-		return c.Status(http.StatusBadRequest).JSON(payload.BaseResponse{
-			Status:  http.StatusBadRequest,
-			Message: "email is required",
-		},
-		)
-	}
 
-	if claim.ID == "" {
+	if claim.UUID == "" {
 		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
 			Status:  http.StatusUnauthorized,
 			Message: "unauthorized",
@@ -139,7 +124,7 @@ func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) (err error) {
 		)
 	}
 
-	res, err := h.Service.User.GetUserByEmail(c.Context(), email)
+	res, err := h.Service.User.LogoutUser(c.Context(), claim.UUID)
 	if err != nil {
 		resError := payload.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -156,12 +141,14 @@ func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) (err error) {
 		return c.Status(resError.Status).JSON(resError)
 	}
 
-	response := payload.BaseResponse{
-		Status:  http.StatusOK,
-		Message: "success",
-		Data:    res,
+	setCookie := fiber.Cookie{
+		Name:    h.Config.Cookies.AccessToken,
+		Value:   "",
+		Expires: time.Now().Add(-1 * time.Hour),
 	}
-	return c.Status(http.StatusOK).JSON(response)
+	c.Cookie(&setCookie)
+
+	return c.Status(http.StatusOK).JSON(res)
 }
 
 func (h *UserHandler) GetUserByID(c *fiber.Ctx) (err error) {
@@ -169,7 +156,7 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) (err error) {
 		claim = c.Locals("mw.auth.claims").(model.JWTToken)
 		e     *pkg.AppError
 	)
-	query := c.Query("id")
+	query := c.Params("id")
 	if query == "" {
 		return c.Status(http.StatusBadRequest).JSON(payload.BaseResponse{
 			Status:  http.StatusBadRequest,
@@ -177,7 +164,7 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) (err error) {
 		},
 		)
 	}
-	if claim.ID == "" {
+	if claim.UUID == "" {
 		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
 			Status:  http.StatusUnauthorized,
 			Message: "unauthorized",

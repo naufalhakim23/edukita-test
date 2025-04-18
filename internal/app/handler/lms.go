@@ -34,7 +34,7 @@ func (h *LMSHandler) CreateAssignment(c *fiber.Ctx) (err error) {
 		)
 	}
 
-	if claim.ID == "" {
+	if claim.UUID == "" {
 		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
 			Status:  http.StatusUnauthorized,
 			Message: "unauthorized",
@@ -81,7 +81,7 @@ func (h *LMSHandler) GetAssignmentByID(c *fiber.Ctx) (err error) {
 		)
 	}
 
-	if claim.ID == "" {
+	if claim.UUID == "" {
 		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
 			Status:  http.StatusUnauthorized,
 			Message: "unauthorized",
@@ -143,7 +143,7 @@ func (h *LMSHandler) UpdateAssignmentByID(c *fiber.Ctx) (err error) {
 		)
 	}
 
-	if claim.ID == "" {
+	if claim.UUID == "" {
 		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
 			Status:  http.StatusUnauthorized,
 			Message: "unauthorized",
@@ -196,7 +196,7 @@ func (h *LMSHandler) CreateSubmission(c *fiber.Ctx) (err error) {
 		)
 	}
 
-	if claim.ID == "" {
+	if claim.UUID == "" {
 		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
 			Status:  http.StatusUnauthorized,
 			Message: "unauthorized",
@@ -243,7 +243,7 @@ func (h *LMSHandler) GetSubmissionByID(c *fiber.Ctx) (err error) {
 		)
 	}
 
-	if claim.ID == "" {
+	if claim.UUID == "" {
 		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
 			Status:  http.StatusUnauthorized,
 			Message: "unauthorized",
@@ -305,7 +305,7 @@ func (h *LMSHandler) UpdateSubmissionByID(c *fiber.Ctx) (err error) {
 		)
 	}
 
-	if claim.ID == "" {
+	if claim.UUID == "" {
 		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
 			Status:  http.StatusUnauthorized,
 			Message: "unauthorized",
@@ -352,7 +352,7 @@ func (h *LMSHandler) GetAllSubmissionsByAssignmentID(c *fiber.Ctx) (err error) {
 		)
 	}
 
-	if claim.ID == "" {
+	if claim.UUID == "" {
 		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
 			Status:  http.StatusUnauthorized,
 			Message: "unauthorized",
@@ -360,7 +360,7 @@ func (h *LMSHandler) GetAllSubmissionsByAssignmentID(c *fiber.Ctx) (err error) {
 		)
 	}
 
-	res, err := h.Service.LearningManagement.GetAllSubmissionsByAssignmentID(c.Context(), query, claim.ID)
+	res, err := h.Service.LearningManagement.GetAllSubmissionsByAssignmentID(c.Context(), query, claim.UUID)
 	if err != nil {
 		resError := payload.BaseResponse{
 			Status:  http.StatusInternalServerError,
@@ -399,7 +399,7 @@ func (h *LMSHandler) GetAllSubmissionsByUserID(c *fiber.Ctx) (err error) {
 		)
 	}
 
-	if claim.ID == "" {
+	if claim.UUID == "" {
 		return c.Status(http.StatusUnauthorized).JSON(payload.BaseResponse{
 			Status:  http.StatusUnauthorized,
 			Message: "unauthorized",

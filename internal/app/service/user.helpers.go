@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 func GenerateJWTToken(user model.User, secret string, expireTime time.Duration) (string, error) {
@@ -16,12 +17,12 @@ func GenerateJWTToken(user model.User, secret string, expireTime time.Duration) 
 	now := time.Now()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, model.JWTToken{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ID:        user.ID.String(),
+			ID:        uuid.New().String(),
 			Issuer:    "edukita-teaching-grading",
 			ExpiresAt: jwt.NewNumericDate(now.Add(expireTime)),
 			IssuedAt:  jwt.NewNumericDate(now),
 		},
-
+		UUID:      user.ID.String(),
 		Email:     user.Email,
 		Name:      user.FirstName,
 		Picture:   user.LastName,

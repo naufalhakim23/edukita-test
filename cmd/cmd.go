@@ -61,8 +61,10 @@ func Run() {
 
 func repositoryConnector(opt repository.RepositoryOption) *repository.Repository {
 	userRepo := repository.InitiateUserRepository(opt)
+	lmsRepo := repository.InitiateLearningManagementRepository(opt)
 	return &repository.Repository{
-		User: userRepo,
+		User:               userRepo,
+		LearningManagement: lmsRepo,
 	}
 }
 

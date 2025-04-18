@@ -9,18 +9,18 @@ import (
 
 // Base contains common fields for all models
 type BaseModel struct {
-	ID        uuid.UUID  `db:"type:uuid;primary_key;default:gen_random_uuid()"`
-	CreatedBy string     `db:"created_by"`
+	ID        uuid.UUID  `db:"id"`
+	CreatedBy uuid.UUID  `db:"created_by"`
 	CreatedAt time.Time  `db:"created_at"`
-	UpdatedBy *string    `db:"updated_by"`
+	UpdatedBy *uuid.UUID `db:"updated_by"`
 	UpdatedAt *time.Time `db:"updated_at"`
-	DeletedBy *string    `db:"deleted_by"`
+	DeletedBy *uuid.UUID `db:"deleted_by"`
 	DeletedAt *time.Time `db:"deleted_at"`
 }
 
 type JWTToken struct {
 	jwt.RegisteredClaims
-	ID        string `json:"id"`
+	UUID      string `json:"uuid"`
 	Email     string `json:"email"`
 	Name      string `json:"name"`
 	Picture   string `json:"picture"`
