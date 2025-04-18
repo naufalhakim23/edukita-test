@@ -8,12 +8,12 @@ import (
 
 type Course struct {
 	BaseModel
-	Code        string    `db:"code" json:"code"`
-	Name        string    `db:"name" json:"name"`
-	Description string    `db:"description" json:"description"`
-	StartDate   time.Time `db:"start_date" json:"start_date"`
-	EndDate     time.Time `db:"end_date" json:"end_date"`
-	IsActive    bool      `db:"is_active" json:"is_active"`
+	Code        string     `db:"code" json:"code"`
+	Name        string     `db:"name" json:"name"`
+	Description string     `db:"description" json:"description"`
+	StartDate   *time.Time `db:"start_date" json:"start_date"`
+	EndDate     *time.Time `db:"end_date" json:"end_date"`
+	IsActive    bool       `db:"is_active" json:"is_active"`
 }
 
 // Assignment represents work assigned to students
@@ -37,7 +37,7 @@ type Submission struct {
 	TeacherID    uuid.UUID  `db:"teacher_id" json:"teacher_id"`
 	SubmittedAt  time.Time  `db:"submitted_at" json:"submitted_at"`
 	Content      string     `db:"content" json:"content"`
-	FileURL      string     `db:"file_url" json:"file_url"`
+	FileURL      *string    `db:"file_url" json:"file_url"`
 	Grade        *float64   `db:"grade" json:"grade"`
 	Feedback     *string    `db:"feedback" json:"feedback"`
 	GradedAt     *time.Time `db:"graded_at" json:"graded_at"`
