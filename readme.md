@@ -1,4 +1,5 @@
 # Edukita LMS API
+[![Postman](https://run.pstmn.io/button.svg)](https://www.postman.com/research-administrator-26078143/workspace/learning-management-system)
 
 A Learning Management System API built with Go, providing functionality for course management, assignments, and submissions.
 
