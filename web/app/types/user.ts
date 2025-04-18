@@ -18,10 +18,8 @@ export type User = {
 }
   
 export type RegisterUserRequest = {
-	name: string;
 	email: string;
 	password: string;
-	confirm_password: string;
 	first_name: string;
 	last_name: string;
 	role: string;

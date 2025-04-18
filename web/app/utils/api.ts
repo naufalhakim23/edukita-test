@@ -1,7 +1,14 @@
+
 import { IResponse, User, RegisterUserRequest, RegisterUserResponse, UserLoginRequest, UserLoginResponse } from '@/types/user';
+
 const API_URL = 'http://localhost:8080/api/v1';
 
-const getHeaders = (token?: string) => {
+const getToken = () => {
+  return localStorage.getItem('token');
+};
+
+const getHeaders = () => {
+  const token = getToken();
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
@@ -30,60 +37,60 @@ export const api = {
     return response.json();
   },
 
-  logout: async (token: string): Promise<IResponse<void>> => {
+  logout: async (): Promise<IResponse<void>> => {
     const response = await fetch(`${API_URL}/user/logout`, {
       method: 'POST',
-      headers: getHeaders(token),
+      headers: getHeaders(),
     });
     return response.json();
   },
 
-  getMe: async (token: string): Promise<IResponse<User>> => {
+  getMe: async (): Promise<IResponse<User>> => {
     const response = await fetch(`${API_URL}/user/me`, {
-      headers: getHeaders(token),
+      headers: getHeaders(),
     });
     return response.json();
   },
 
   // Assignments endpoints
-  getAssignments: async (token: string) => {
+  getAssignments: async () => {
     const response = await fetch(`${API_URL}/lms/assignments`, {
-      headers: getHeaders(token),
+      headers: getHeaders(),
     });
     return response.json();
   },
 
-  getAssignment: async (id: number, token: string) => {
+  getAssignment: async (id: number) => {
     const response = await fetch(`${API_URL}/lms/assignments/${id}`, {
-      headers: getHeaders(token),
+      headers: getHeaders(),
     });
     return response.json();
   },
 
-  createAssignment: async (data: any, token: string) => {
+  createAssignment: async (data: any) => {
     const response = await fetch(`${API_URL}/lms/assignments`, {
       method: 'POST',
-      headers: getHeaders(token),
+      headers: getHeaders(),
       body: JSON.stringify(data),
     });
     return response.json();
   },
 
   // Submissions endpoints
-  getSubmissions: async (assignmentId: number | undefined, token: string) => {
+  getSubmissions: async (assignmentId?: number) => {
     const url = assignmentId 
       ? `${API_URL}/lms/submissions/assignments/${assignmentId}`
       : `${API_URL}/lms/submissions`;
     const response = await fetch(url, {
-      headers: getHeaders(token),
+      headers: getHeaders(),
     });
     return response.json();
   },
 
-  createSubmission: async (data: any, token: string) => {
+  createSubmission: async (data: any) => {
     const response = await fetch(`${API_URL}/lms/submissions`, {
       method: 'POST',
-      headers: getHeaders(token),
+      headers: getHeaders(),
       body: JSON.stringify(data),
     });
     return response.json();
