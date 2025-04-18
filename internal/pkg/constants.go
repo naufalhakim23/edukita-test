@@ -13,6 +13,10 @@ var (
 	TABLE_USERS    = "users"
 	TABLE_STUDENTS = "students"
 	TABLE_TEACHERS = "teachers"
+
+	TABLE_COURSES     = "courses"
+	TABLE_ASSIGNMENTS = "assignments"
+	TABLE_SUBMISSIONS = "submissions"
 )
 
 // Roles

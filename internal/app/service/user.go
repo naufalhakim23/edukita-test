@@ -18,6 +18,9 @@ import (
 type (
 	IUserService interface {
 		RegisterUser(ctx context.Context, requestBody payload.RegisterUserRequest) (response *payload.RegisterUserResponse, err error)
+		LoginUser(ctx context.Context, requestBody *payload.LoginUserRequest) (response *payload.LoginUserResponse, err error)
+		GetUserByEmail(ctx context.Context, email string) (response *payload.GetUserResponse, err error)
+		GetUserByID(ctx context.Context, id string) (response *payload.GetUserResponse, err error)
 	}
 	UserService struct {
 		ServiceOption
@@ -66,15 +69,27 @@ func (s *UserService) RegisterUser(ctx context.Context, requestBody payload.Regi
 				return
 			}
 		case pkg.ROLE_STUDENT:
-			// student := model.Student{
-			// 	UserID:         user.ID,
-			// 	StudentID:      uuid.NewString(),
-			// 	EnrollmentYear: time.Now().Year(),
-			// 	// Program: ,
-			// }
+			student := model.Student{
+				UserID:         user.ID,
+				StudentID:      uuid.NewString(),
+				EnrollmentYear: time.Now().Year(),
+				Program:        requestBody.Program,
+			}
+			student, err = s.Repository.User.CreateStudent(ctx, student, tx)
+			if err != nil {
+				s.Logger.Warnf(fmt.Sprintf("failed to create student:%s", err.Error()), zap.Error(err))
+				return
+			}
 		default:
 			err = pkg.NewBadRequestError("invalid role", nil)
+			s.Logger.Warnf("invalid role: %s", user.Role, zap.Error(err))
 			return
+		}
+
+		token, err := GenerateJWTToken(user, s.Config.Application.Secret, s.Config.Cookies.SSOExpired)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to generate token: %s", err.Error()), zap.Error(err))
+			return err
 		}
 
 		response = &payload.RegisterUserResponse{
@@ -83,6 +98,126 @@ func (s *UserService) RegisterUser(ctx context.Context, requestBody payload.Regi
 			LastName:  user.LastName,
 			Email:     user.Email,
 			Role:      user.Role,
+			Token:     token,
+		}
+
+		return
+	})
+}
+
+func (s *UserService) LoginUser(ctx context.Context, requestBody *payload.LoginUserRequest) (response *payload.LoginUserResponse, err error) {
+	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
+		user, err := s.Repository.User.GetUserByEmail(ctx, requestBody.Email, tx)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to get user by email: %s", err.Error()), zap.Error(err))
+			return
+		}
+
+		if !user.CheckPassword(requestBody.Password) {
+			err = pkg.NewBadRequestError("invalid password", nil)
+			s.Logger.Warnf("invalid password: %s", user.Role, zap.Error(err))
+			return
+		}
+
+		token, err := GenerateJWTToken(user, s.Config.Application.Secret, s.Config.Cookies.SSOExpired)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to generate token: %s", err.Error()), zap.Error(err))
+			return err
+		}
+
+		response.Token = token
+
+		return
+	})
+}
+
+func (s *UserService) GetUserByEmail(ctx context.Context, email string) (response *payload.GetUserResponse, err error) {
+	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
+		user, err := s.Repository.User.GetUserByEmail(ctx, email, tx)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to get user by email: %s", err.Error()), zap.Error(err))
+			return
+		}
+
+		switch user.Role {
+		case pkg.ROLE_ADMIN:
+		case pkg.ROLE_TEACHER:
+			teacher, err := s.Repository.User.GetTeacherByID(ctx, user.ID.String(), tx)
+			if err != nil {
+				s.Logger.Warnf(fmt.Sprintf("failed to get teacher by id: %s", err.Error()), zap.Error(err))
+				return err
+			}
+			response.Role.Department = teacher.Department
+			response.Role.Title = teacher.Title
+		case pkg.ROLE_STUDENT:
+			student, err := s.Repository.User.GetStudentByID(ctx, user.ID.String(), tx)
+			if err != nil {
+				s.Logger.Warnf(fmt.Sprintf("failed to get student by id: %s", err.Error()), zap.Error(err))
+				return err
+			}
+			response.Role.StudentID = student.StudentID
+			response.Role.EnrollmentYear = student.EnrollmentYear
+			response.Role.Program = student.Program
+		default:
+			err = pkg.NewBadRequestError("invalid role", nil)
+			s.Logger.Warnf("invalid role: %s", user.Role, zap.Error(err))
+			return
+		}
+
+		response.ID = user.ID.String()
+		response.FirstName = user.FirstName
+		response.LastName = user.LastName
+		response.Email = user.Email
+		response.IsActive = user.IsActive
+		response.LastLogin = user.LastLogin.Format(time.RFC3339)
+		response.CreatedAt = user.CreatedAt.Format(time.RFC3339)
+		response.UpdatedAt = user.UpdatedAt.Format(time.RFC3339)
+		return
+	})
+}
+
+func (s *UserService) GetUserByID(ctx context.Context, id string) (response *payload.GetUserResponse, err error) {
+	return response, repository.TransactionWrapper(ctx, s.Postgres, func(tx *sqlx.Tx) (err error) {
+		user, err := s.Repository.User.GetUserByID(ctx, id, tx)
+		if err != nil {
+			s.Logger.Warnf(fmt.Sprintf("failed to get user by id: %s", err.Error()), zap.Error(err))
+			return
+		}
+
+		switch user.Role {
+		case pkg.ROLE_ADMIN:
+		case pkg.ROLE_TEACHER:
+			teacher, err := s.Repository.User.GetTeacherByID(ctx, user.ID.String(), tx)
+			if err != nil {
+				s.Logger.Warnf(fmt.Sprintf("failed to get teacher by id: %s", err.Error()), zap.Error(err))
+				return err
+			}
+			response.Role.Department = teacher.Department
+			response.Role.Title = teacher.Title
+		case pkg.ROLE_STUDENT:
+			student, err := s.Repository.User.GetStudentByID(ctx, user.ID.String(), tx)
+			if err != nil {
+				s.Logger.Warnf(fmt.Sprintf("failed to get student by id: %s", err.Error()), zap.Error(err))
+				return err
+			}
+			response.Role.StudentID = student.StudentID
+			response.Role.EnrollmentYear = student.EnrollmentYear
+			response.Role.Program = student.Program
+		default:
+			err = pkg.NewBadRequestError("invalid role", nil)
+			s.Logger.Warnf("invalid role: %s", user.Role, zap.Error(err))
+			return
+		}
+
+		response.ID = user.ID.String()
+		response.FirstName = user.FirstName
+		response.LastName = user.LastName
+		response.Email = user.Email
+		response.IsActive = user.IsActive
+		response.LastLogin = user.LastLogin.Format(time.RFC3339)
+		response.CreatedAt = user.CreatedAt.Format(time.RFC3339)
+		if user.UpdatedAt != nil {
+			response.UpdatedAt = user.UpdatedAt.Format(time.RFC3339)
 		}
 
 		return
