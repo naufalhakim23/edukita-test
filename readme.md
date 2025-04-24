@@ -20,7 +20,7 @@ Download and install Go from the [official website](https://golang.org/dl/).
 #### 2. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/edukita-lms.git
+git clone https://github.com/naufalhakim23/edukita-test.git
 cd edukita-lms
 ```
 
