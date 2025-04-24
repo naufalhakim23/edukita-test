@@ -5,12 +5,12 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     # Add TLS with Let's Encrypt
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
-  tls:
-  - hosts:
-    - lms.edukita.example.com
-    secretName: edukita-lms-tls
+  # tls:
+  # - hosts:
+  #   - lms.edukita.example.com
+  #   secretName: edukita-lms-tls
   rules:
   - host: lms.edukita.example.com
     http:

@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
       - name: migrations
-        image: edukita-lms:latest
+        image: docker.io/hkimm/edukita-lms:latest
         command: ["/bin/sh", "-c"]
         args:
           - cd /usr/local/bin && ./edukita-teaching-grading migrate up

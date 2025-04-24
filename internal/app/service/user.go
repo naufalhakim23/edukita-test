@@ -164,17 +164,19 @@ func (s *UserService) GetUserByID(ctx context.Context, id string) (response payl
 				s.Logger.Warnf(fmt.Sprintf("failed to get teacher by id: %s", err.Error()), zap.Error(err))
 				return err
 			}
-			response.Role.Department = teacher.Department
-			response.Role.Title = teacher.Title
+			response.UserRole.Department = teacher.Department
+			response.UserRole.Title = teacher.Title
+			response.UserRole.Role = pkg.ROLE_TEACHER
 		case pkg.ROLE_STUDENT:
 			student, err := s.Repository.User.GetStudentByID(ctx, user.ID.String(), tx)
 			if err != nil {
 				s.Logger.Warnf(fmt.Sprintf("failed to get student by id: %s", err.Error()), zap.Error(err))
 				return err
 			}
-			response.Role.StudentID = student.StudentID
-			response.Role.EnrollmentYear = student.EnrollmentYear
-			response.Role.Program = student.Program
+			response.UserRole.StudentID = student.StudentID
+			response.UserRole.EnrollmentYear = student.EnrollmentYear
+			response.UserRole.Program = student.Program
+			response.UserRole.Role = pkg.ROLE_STUDENT
 		default:
 			err = pkg.NewBadRequestError("invalid role", nil)
 			s.Logger.Warnf("invalid role: %s", user.Role, zap.Error(err))
