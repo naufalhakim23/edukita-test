@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: edukita-lms-app
-        image: edukita-lms:latest
+        image: docker.io/hkimm/edukita-lms:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -32,15 +32,15 @@ spec:
           requests:
             cpu: "100m"
             memory: "256Mi"
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 15
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 30
+        # readinessProbe:
+        #   httpGet:
+        #     path: /healthz
+        #     port: 8080
+        #   initialDelaySeconds: 15
+        #   periodSeconds: 10
+        # livenessProbe:
+        #   httpGet:
+        #     path: /healthz
+        #     port: 8080
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 30
